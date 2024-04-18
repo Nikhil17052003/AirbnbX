@@ -26,6 +26,11 @@ import { UserFindUniqueArgs } from "./UserFindUniqueArgs";
 import { CreateUserArgs } from "./CreateUserArgs";
 import { UpdateUserArgs } from "./UpdateUserArgs";
 import { DeleteUserArgs } from "./DeleteUserArgs";
+import { SetupWishlistFindManyArgs } from "../../setupWishlist/base/SetupWishlistFindManyArgs";
+import { SetupWishlist } from "../../setupWishlist/base/SetupWishlist";
+import { TripFindManyArgs } from "../../trip/base/TripFindManyArgs";
+import { Trip } from "../../trip/base/Trip";
+import { Listing } from "../../listing/base/Listing";
 import { UserService } from "../user.service";
 @common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => User)
@@ -86,7 +91,15 @@ export class UserResolverBase {
   async createUser(@graphql.Args() args: CreateUserArgs): Promise<User> {
     return await this.service.createUser({
       ...args,
-      data: args.data,
+      data: {
+        ...args.data,
+
+        listings: args.data.listings
+          ? {
+              connect: args.data.listings,
+            }
+          : undefined,
+      },
     });
   }
 
@@ -101,7 +114,15 @@ export class UserResolverBase {
     try {
       return await this.service.updateUser({
         ...args,
-        data: args.data,
+        data: {
+          ...args.data,
+
+          listings: args.data.listings
+            ? {
+                connect: args.data.listings,
+              }
+            : undefined,
+        },
       });
     } catch (error) {
       if (isRecordNotFoundError(error)) {
@@ -130,5 +151,64 @@ export class UserResolverBase {
       }
       throw error;
     }
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => [SetupWishlist], { name: "setupWishlists" })
+  @nestAccessControl.UseRoles({
+    resource: "SetupWishlist",
+    action: "read",
+    possession: "any",
+  })
+  async findSetupWishlists(
+    @graphql.Parent() parent: User,
+    @graphql.Args() args: SetupWishlistFindManyArgs
+  ): Promise<SetupWishlist[]> {
+    const results = await this.service.findSetupWishlists(parent.id, args);
+
+    if (!results) {
+      return [];
+    }
+
+    return results;
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => [Trip], { name: "trips" })
+  @nestAccessControl.UseRoles({
+    resource: "Trip",
+    action: "read",
+    possession: "any",
+  })
+  async findTrips(
+    @graphql.Parent() parent: User,
+    @graphql.Args() args: TripFindManyArgs
+  ): Promise<Trip[]> {
+    const results = await this.service.findTrips(parent.id, args);
+
+    if (!results) {
+      return [];
+    }
+
+    return results;
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => Listing, {
+    nullable: true,
+    name: "listings",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "Listing",
+    action: "read",
+    possession: "any",
+  })
+  async getListings(@graphql.Parent() parent: User): Promise<Listing | null> {
+    const result = await this.service.getListings(parent.id);
+
+    if (!result) {
+      return null;
+    }
+    return result;
   }
 }

@@ -11,10 +11,14 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { InputType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsOptional } from "class-validator";
+import { IsString, IsOptional, ValidateNested } from "class-validator";
+import { ListingWhereUniqueInput } from "../../listing/base/ListingWhereUniqueInput";
+import { Type } from "class-transformer";
 import { IsJSONValue } from "../../validators";
 import { GraphQLJSON } from "graphql-type-json";
 import { InputJsonValue } from "../../types";
+import { SetupWishlistCreateNestedManyWithoutUsersInput } from "./SetupWishlistCreateNestedManyWithoutUsersInput";
+import { TripCreateNestedManyWithoutUsersInput } from "./TripCreateNestedManyWithoutUsersInput";
 
 @InputType()
 class UserCreateInput {
@@ -52,6 +56,18 @@ class UserCreateInput {
   lastName?: string | null;
 
   @ApiProperty({
+    required: false,
+    type: () => ListingWhereUniqueInput,
+  })
+  @ValidateNested()
+  @Type(() => ListingWhereUniqueInput)
+  @IsOptional()
+  @Field(() => ListingWhereUniqueInput, {
+    nullable: true,
+  })
+  listings?: ListingWhereUniqueInput | null;
+
+  @ApiProperty({
     required: true,
     type: String,
   })
@@ -65,6 +81,30 @@ class UserCreateInput {
   @IsJSONValue()
   @Field(() => GraphQLJSON)
   roles!: InputJsonValue;
+
+  @ApiProperty({
+    required: false,
+    type: () => SetupWishlistCreateNestedManyWithoutUsersInput,
+  })
+  @ValidateNested()
+  @Type(() => SetupWishlistCreateNestedManyWithoutUsersInput)
+  @IsOptional()
+  @Field(() => SetupWishlistCreateNestedManyWithoutUsersInput, {
+    nullable: true,
+  })
+  setupWishlists?: SetupWishlistCreateNestedManyWithoutUsersInput;
+
+  @ApiProperty({
+    required: false,
+    type: () => TripCreateNestedManyWithoutUsersInput,
+  })
+  @ValidateNested()
+  @Type(() => TripCreateNestedManyWithoutUsersInput)
+  @IsOptional()
+  @Field(() => TripCreateNestedManyWithoutUsersInput, {
+    nullable: true,
+  })
+  trips?: TripCreateNestedManyWithoutUsersInput;
 
   @ApiProperty({
     required: true,

@@ -10,7 +10,15 @@ https://docs.amplication.com/how-to/custom-code
 ------------------------------------------------------------------------------
   */
 import { PrismaService } from "../../prisma/prisma.service";
-import { Prisma, User as PrismaUser } from "@prisma/client";
+
+import {
+  Prisma,
+  User as PrismaUser,
+  SetupWishlist as PrismaSetupWishlist,
+  Trip as PrismaTrip,
+  Listing as PrismaListing,
+} from "@prisma/client";
+
 import { PasswordService } from "../../auth/password.service";
 import { transformStringFieldUpdateInput } from "../../prisma.util";
 
@@ -68,5 +76,35 @@ export class UserServiceBase {
     args: Prisma.SelectSubset<T, Prisma.UserDeleteArgs>
   ): Promise<PrismaUser> {
     return this.prisma.user.delete(args);
+  }
+
+  async findSetupWishlists(
+    parentId: string,
+    args: Prisma.SetupWishlistFindManyArgs
+  ): Promise<PrismaSetupWishlist[]> {
+    return this.prisma.user
+      .findUniqueOrThrow({
+        where: { id: parentId },
+      })
+      .setupWishlists(args);
+  }
+
+  async findTrips(
+    parentId: string,
+    args: Prisma.TripFindManyArgs
+  ): Promise<PrismaTrip[]> {
+    return this.prisma.user
+      .findUniqueOrThrow({
+        where: { id: parentId },
+      })
+      .trips(args);
+  }
+
+  async getListings(parentId: string): Promise<PrismaListing | null> {
+    return this.prisma.user
+      .findUnique({
+        where: { id: parentId },
+      })
+      .listings();
   }
 }
