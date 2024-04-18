@@ -11,11 +11,14 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { ObjectType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsString, IsOptional } from "class-validator";
+import { IsDate, IsString, IsOptional, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
+import { Listing } from "../../listing/base/Listing";
 import { IsJSONValue } from "../../validators";
 import { GraphQLJSON } from "graphql-type-json";
 import { JsonValue } from "type-fest";
+import { SetupWishlist } from "../../setupWishlist/base/SetupWishlist";
+import { Trip } from "../../trip/base/Trip";
 
 @ObjectType()
 class User {
@@ -69,11 +72,38 @@ class User {
   lastName!: string | null;
 
   @ApiProperty({
+    required: false,
+    type: () => Listing,
+  })
+  @ValidateNested()
+  @Type(() => Listing)
+  @IsOptional()
+  listings?: Listing | null;
+
+  @ApiProperty({
     required: true,
   })
   @IsJSONValue()
   @Field(() => GraphQLJSON)
   roles!: JsonValue;
+
+  @ApiProperty({
+    required: false,
+    type: () => [SetupWishlist],
+  })
+  @ValidateNested()
+  @Type(() => SetupWishlist)
+  @IsOptional()
+  setupWishlists?: Array<SetupWishlist>;
+
+  @ApiProperty({
+    required: false,
+    type: () => [Trip],
+  })
+  @ValidateNested()
+  @Type(() => Trip)
+  @IsOptional()
+  trips?: Array<Trip>;
 
   @ApiProperty({
     required: true,

@@ -13,8 +13,11 @@ import { InputType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { StringNullableFilter } from "../../util/StringNullableFilter";
 import { Type } from "class-transformer";
-import { IsOptional } from "class-validator";
+import { IsOptional, ValidateNested } from "class-validator";
 import { StringFilter } from "../../util/StringFilter";
+import { ListingWhereUniqueInput } from "../../listing/base/ListingWhereUniqueInput";
+import { SetupWishlistListRelationFilter } from "../../setupWishlist/base/SetupWishlistListRelationFilter";
+import { TripListRelationFilter } from "../../trip/base/TripListRelationFilter";
 
 @InputType()
 class UserWhereInput {
@@ -61,6 +64,42 @@ class UserWhereInput {
     nullable: true,
   })
   lastName?: StringNullableFilter;
+
+  @ApiProperty({
+    required: false,
+    type: () => ListingWhereUniqueInput,
+  })
+  @ValidateNested()
+  @Type(() => ListingWhereUniqueInput)
+  @IsOptional()
+  @Field(() => ListingWhereUniqueInput, {
+    nullable: true,
+  })
+  listings?: ListingWhereUniqueInput;
+
+  @ApiProperty({
+    required: false,
+    type: () => SetupWishlistListRelationFilter,
+  })
+  @ValidateNested()
+  @Type(() => SetupWishlistListRelationFilter)
+  @IsOptional()
+  @Field(() => SetupWishlistListRelationFilter, {
+    nullable: true,
+  })
+  setupWishlists?: SetupWishlistListRelationFilter;
+
+  @ApiProperty({
+    required: false,
+    type: () => TripListRelationFilter,
+  })
+  @ValidateNested()
+  @Type(() => TripListRelationFilter)
+  @IsOptional()
+  @Field(() => TripListRelationFilter, {
+    nullable: true,
+  })
+  trips?: TripListRelationFilter;
 
   @ApiProperty({
     required: false,

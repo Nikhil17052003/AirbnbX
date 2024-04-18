@@ -26,6 +26,12 @@ import { User } from "./User";
 import { UserFindManyArgs } from "./UserFindManyArgs";
 import { UserWhereUniqueInput } from "./UserWhereUniqueInput";
 import { UserUpdateInput } from "./UserUpdateInput";
+import { SetupWishlistFindManyArgs } from "../../setupWishlist/base/SetupWishlistFindManyArgs";
+import { SetupWishlist } from "../../setupWishlist/base/SetupWishlist";
+import { SetupWishlistWhereUniqueInput } from "../../setupWishlist/base/SetupWishlistWhereUniqueInput";
+import { TripFindManyArgs } from "../../trip/base/TripFindManyArgs";
+import { Trip } from "../../trip/base/Trip";
+import { TripWhereUniqueInput } from "../../trip/base/TripWhereUniqueInput";
 
 @swagger.ApiBearerAuth()
 @common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
@@ -47,13 +53,28 @@ export class UserControllerBase {
   })
   async createUser(@common.Body() data: UserCreateInput): Promise<User> {
     return await this.service.createUser({
-      data: data,
+      data: {
+        ...data,
+
+        listings: data.listings
+          ? {
+              connect: data.listings,
+            }
+          : undefined,
+      },
       select: {
         createdAt: true,
         email: true,
         firstName: true,
         id: true,
         lastName: true,
+
+        listings: {
+          select: {
+            id: true,
+          },
+        },
+
         roles: true,
         updatedAt: true,
         username: true,
@@ -83,6 +104,13 @@ export class UserControllerBase {
         firstName: true,
         id: true,
         lastName: true,
+
+        listings: {
+          select: {
+            id: true,
+          },
+        },
+
         roles: true,
         updatedAt: true,
         username: true,
@@ -113,6 +141,13 @@ export class UserControllerBase {
         firstName: true,
         id: true,
         lastName: true,
+
+        listings: {
+          select: {
+            id: true,
+          },
+        },
+
         roles: true,
         updatedAt: true,
         username: true,
@@ -145,13 +180,28 @@ export class UserControllerBase {
     try {
       return await this.service.updateUser({
         where: params,
-        data: data,
+        data: {
+          ...data,
+
+          listings: data.listings
+            ? {
+                connect: data.listings,
+              }
+            : undefined,
+        },
         select: {
           createdAt: true,
           email: true,
           firstName: true,
           id: true,
           lastName: true,
+
+          listings: {
+            select: {
+              id: true,
+            },
+          },
+
           roles: true,
           updatedAt: true,
           username: true,
@@ -190,6 +240,13 @@ export class UserControllerBase {
           firstName: true,
           id: true,
           lastName: true,
+
+          listings: {
+            select: {
+              id: true,
+            },
+          },
+
           roles: true,
           updatedAt: true,
           username: true,
@@ -203,5 +260,221 @@ export class UserControllerBase {
       }
       throw error;
     }
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @common.Get("/:id/setupWishlists")
+  @ApiNestedQuery(SetupWishlistFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "SetupWishlist",
+    action: "read",
+    possession: "any",
+  })
+  async findSetupWishlists(
+    @common.Req() request: Request,
+    @common.Param() params: UserWhereUniqueInput
+  ): Promise<SetupWishlist[]> {
+    const query = plainToClass(SetupWishlistFindManyArgs, request.query);
+    const results = await this.service.findSetupWishlists(params.id, {
+      ...query,
+      select: {
+        createdAt: true,
+        id: true,
+
+        listings: {
+          select: {
+            id: true,
+          },
+        },
+
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (results === null) {
+      throw new errors.NotFoundException(
+        `No resource was found for ${JSON.stringify(params)}`
+      );
+    }
+    return results;
+  }
+
+  @common.Post("/:id/setupWishlists")
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "update",
+    possession: "any",
+  })
+  async connectSetupWishlists(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: SetupWishlistWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      setupWishlists: {
+        connect: body,
+      },
+    };
+    await this.service.updateUser({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Patch("/:id/setupWishlists")
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "update",
+    possession: "any",
+  })
+  async updateSetupWishlists(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: SetupWishlistWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      setupWishlists: {
+        set: body,
+      },
+    };
+    await this.service.updateUser({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Delete("/:id/setupWishlists")
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "update",
+    possession: "any",
+  })
+  async disconnectSetupWishlists(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: SetupWishlistWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      setupWishlists: {
+        disconnect: body,
+      },
+    };
+    await this.service.updateUser({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @common.Get("/:id/trips")
+  @ApiNestedQuery(TripFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Trip",
+    action: "read",
+    possession: "any",
+  })
+  async findTrips(
+    @common.Req() request: Request,
+    @common.Param() params: UserWhereUniqueInput
+  ): Promise<Trip[]> {
+    const query = plainToClass(TripFindManyArgs, request.query);
+    const results = await this.service.findTrips(params.id, {
+      ...query,
+      select: {
+        createdAt: true,
+        id: true,
+
+        listing: {
+          select: {
+            id: true,
+          },
+        },
+
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (results === null) {
+      throw new errors.NotFoundException(
+        `No resource was found for ${JSON.stringify(params)}`
+      );
+    }
+    return results;
+  }
+
+  @common.Post("/:id/trips")
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "update",
+    possession: "any",
+  })
+  async connectTrips(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: TripWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      trips: {
+        connect: body,
+      },
+    };
+    await this.service.updateUser({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Patch("/:id/trips")
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "update",
+    possession: "any",
+  })
+  async updateTrips(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: TripWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      trips: {
+        set: body,
+      },
+    };
+    await this.service.updateUser({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Delete("/:id/trips")
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "update",
+    possession: "any",
+  })
+  async disconnectTrips(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: TripWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      trips: {
+        disconnect: body,
+      },
+    };
+    await this.service.updateUser({
+      where: params,
+      data,
+      select: { id: true },
+    });
   }
 }

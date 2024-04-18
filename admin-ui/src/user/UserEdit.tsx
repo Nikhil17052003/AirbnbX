@@ -1,12 +1,20 @@
 import * as React from "react";
+
 import {
   Edit,
   SimpleForm,
   EditProps,
   TextInput,
+  ReferenceInput,
+  SelectInput,
   PasswordInput,
   SelectArrayInput,
+  ReferenceArrayInput,
 } from "react-admin";
+
+import { ListingTitle } from "../listing/ListingTitle";
+import { SetupWishlistTitle } from "../setupWishlist/SetupWishlistTitle";
+import { TripTitle } from "../trip/TripTitle";
 import { ROLES_OPTIONS } from "../user/RolesOptions";
 
 export const UserEdit = (props: EditProps): React.ReactElement => {
@@ -16,6 +24,13 @@ export const UserEdit = (props: EditProps): React.ReactElement => {
         <TextInput label="Email" source="email" type="email" />
         <TextInput label="First Name" source="firstName" />
         <TextInput label="Last Name" source="lastName" />
+        <ReferenceInput
+          source="listings.id"
+          reference="Listing"
+          label="Listings"
+        >
+          <SelectInput optionText={ListingTitle} />
+        </ReferenceInput>
         <PasswordInput label="Password" source="password" />
         <SelectArrayInput
           source="roles"
@@ -23,6 +38,22 @@ export const UserEdit = (props: EditProps): React.ReactElement => {
           optionText="label"
           optionValue="value"
         />
+        <ReferenceArrayInput
+          source="setupWishlists"
+          reference="SetupWishlist"
+          parse={(value: any) => value && value.map((v: any) => ({ id: v }))}
+          format={(value: any) => value && value.map((v: any) => v.id)}
+        >
+          <SelectArrayInput optionText={SetupWishlistTitle} />
+        </ReferenceArrayInput>
+        <ReferenceArrayInput
+          source="trips"
+          reference="Trip"
+          parse={(value: any) => value && value.map((v: any) => ({ id: v }))}
+          format={(value: any) => value && value.map((v: any) => v.id)}
+        >
+          <SelectArrayInput optionText={TripTitle} />
+        </ReferenceArrayInput>
         <TextInput label="Username" source="username" />
       </SimpleForm>
     </Edit>
